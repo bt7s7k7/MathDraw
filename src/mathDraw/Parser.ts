@@ -1,5 +1,6 @@
 import { ref, watch } from '@vue/composition-api'
 import { parseScript, Program } from "esprima"
+import { BaseNode } from 'estree'
 import { Diagnostic } from './Diagnostic'
 import { Entity } from './entities/Entity'
 import { EqualityEntity } from './entities/EqualityEntity'
@@ -15,6 +16,8 @@ export namespace Parser {
         let AST: Program
         try {
             AST = parseScript(code.value, {
+                // @ts-ignore
+                attachComment: true,
                 comment: true,
                 loc: true,
                 range: true
@@ -32,12 +35,43 @@ export namespace Parser {
     }
 
     export function parseEntity(token: Program["body"][number]) {
+        const parseComment = (entity: Entity, expression: BaseNode) => {
+            const comments = expression.trailingComments
+            if (comments) {
+                for (const comment of comments) {
+                    if (comment.loc!.start.line > expression.loc!.end.line) {
+                        output.value.push({ text: comment.value })
+                    } else {
+                        entity.text = entity.text ? entity.text + comment.value : comment.value
+                    }
+                }
+            }
+        }
+
         if (token.type == "ExpressionStatement") {
             if (token.expression.type == "AssignmentExpression") {
-                const entity = EqualityEntity.parse(code.value, token)
-                output.value.push(entity)
+                const variable = token.expression.left
+                if ("name" in variable) {
+                    const entity = EqualityEntity.parse(code.value, variable.name, token.expression.right)
+                    output.value.push(entity)
+                    parseComment(entity, token)
+                } else {
+                    throw void 0
+                }
+
             } else {
                 diagnostics.value.push(new Diagnostic(token.loc!.start.line, `Cannon parse entity ${token.type}/${token.expression.type}`))
+            }
+        } else if (token.type == "VariableDeclaration") {
+            for (const declaration of token.declarations) {
+                if (!("name" in declaration.id)) throw void 0
+                const entity = EqualityEntity.parse(code.value, declaration.id.name!, declaration.init!)
+
+                output.value.push(entity)
+
+                parseComment(entity, declaration)
+
+                parseComment(entity, token)
             }
         } else {
             diagnostics.value.push(new Diagnostic(token.loc!.start.line, `Cannon parse entity ${token.type}`))

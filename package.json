@@ -20,6 +20,7 @@
   "devDependencies": {
     "@types/codemirror": "^0.0.100",
     "@types/esprima": "^4.0.2",
+    "@types/estree": "^0.0.45",
     "@vue/cli-plugin-babel": "~4.5.0",
     "@vue/cli-plugin-router": "~4.5.0",
     "@vue/cli-plugin-typescript": "~4.5.0",
