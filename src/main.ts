@@ -8,8 +8,12 @@ Vue.use(BootstrapVue)
 Vue.use(IconsPlugin)
 Vue.use(VueCompositionAPI)
 
+declare const mathJaxReady: Promise<void>
+
 // Async import, so stuff gets executed after VueCompositionAPI is setup
-import("./mathDraw/App").then(({ App }) => {
+import("./mathDraw/App").then(async ({ App }) => {
+    await mathJaxReady
+
     Vue.config.productionTip = false
 
     new Vue({

@@ -1,5 +1,6 @@
 import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
 import { Diagnostic } from '../Diagnostic';
+import { MathJaxAbs } from '../MathJaxAbs';
 import { Parser } from '../Parser';
 
 export const Renderer = defineComponent({
@@ -24,10 +25,7 @@ export const Renderer = defineComponent({
                 try {
                     const compiled = new Function("write", source.join("\n"))
                     compiled((text: string) => {
-                        const pre = document.createElement("pre")
-                        pre.classList.add("d-block")
-                        pre.innerText = text
-                        currOutput.push(pre)
+                        currOutput.push(MathJaxAbs.renderAsciiMath(text))
                     })
                 } catch (err) {
                     Parser.diagnostics.value.push(new Diagnostic(-1, err.stack))
@@ -48,7 +46,7 @@ export const Renderer = defineComponent({
 
         return () => (
             <div>
-                <div ref={outputElement}></div>
+                <div ref={outputElement} class={["p-1"]}></div>
                 <pre>{JSON.stringify(Parser.output.value, null, 2)}</pre>
             </div>
         )
