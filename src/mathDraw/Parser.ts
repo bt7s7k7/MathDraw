@@ -104,10 +104,13 @@ export namespace Parser {
         }
     }
 
+    let updateTimeout = 0
+
     watch(() => code.value, () => {
         localStorage.setItem(LS_KEY, code.value)
 
-        parseCode()
+        clearTimeout(updateTimeout)
+        updateTimeout = setTimeout(() => parseCode(), 200)
     })
 
     parseCode()
