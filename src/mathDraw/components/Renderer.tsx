@@ -105,8 +105,13 @@ export const Renderer = defineComponent({
 
         return () => (
             <div style={{ "contain": "strict", "overflow-y": "scroll", "flex-grow": "1" }}>
-                <div ref={outputElement} class={["p-1"]}></div>
-                <pre>{JSON.stringify(Parser.output.value, null, 2)}</pre>
+                <div ref={outputElement} class={["p-2"]}></div>
+                <b-btn variant="white" onClick={() => ctx.root.$emit('bv::toggle::collapse', 'json-collapse')}>
+                    <b-icon-code />
+                </b-btn>
+                <b-collapse id="json-collapse">
+                    <pre>{JSON.stringify(Parser.output.value, null, 2)}</pre>
+                </b-collapse>
             </div>
         )
     }
