@@ -36,10 +36,11 @@ export const Renderer = defineComponent({
                     
                         return ret.join(" ")
                     }`,
-                    ...["sin", "cos", "tan"].map(v => `var ${v} = Math.${v}`),
+                    ...["sin", "cos", "tan", "sqrt"].map(v => `var ${v} = Math.${v}`),
                     ...["sin", "cos", "tan"].map(v => `var arc${v} = Math.a${v}`),
                     "var TO_DEG = Math.PI / 180",
-                    "var pi = Math.PI"
+                    "var pi = Math.PI",
+                    "var _ = v => v"
                 ]
 
                 for (const entity of entities) {
@@ -59,6 +60,7 @@ export const Renderer = defineComponent({
                             currOutput.push(MathJaxAbs.renderAsciiMath(text
                                 .replace(/TO_DEG/g, "°")
                                 .replace(/arc(.{3})/g, "$1^-1")
+                                .replace(/_ \(/g, "(")
                             ))
                         },
                         (input: Record<string, string>) => {
