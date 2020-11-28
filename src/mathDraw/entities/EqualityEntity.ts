@@ -12,12 +12,12 @@ export namespace EqualityEntity {
 
         const parseExpression = (expression: Expression) => {
             if (expression.type == "BinaryExpression") {
-                if (expression.left.type == "Literal" && expression.right.range![0] == expression.left.range![1] + expression.operator.length + 2 + 1) {
+                if (expression.operator == "*" && expression.left.type == "Literal" && expression.right.range![0] == expression.left.range![1] + expression.operator.length + 2 + 1) {
                     parseExpression(expression.left)
                     ret.push("(")
                     parseExpression(expression.right)
                     ret.push(")")
-                } else if (expression.left.type == "Literal" && (expression.right.type == "Identifier" || expression.right.type == "BinaryExpression" && expression.right.operator == "**")) {
+                } else if (expression.operator == "*" && (expression.left.type == "Literal" || expression.left.type == "Identifier") && (expression.right.type == "Identifier" || expression.right.type == "BinaryExpression" && expression.right.operator == "**")) {
                     parseExpression(expression.left)
                     parseExpression(expression.right)
                 } else {
