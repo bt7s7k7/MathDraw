@@ -41,13 +41,16 @@ export namespace Parser {
             if (comments) {
                 for (const comment of comments) {
                     if (comment.loc!.start.line > expression.loc!.end.line) {
-                        output.value.push({ text: comment.value })
+                        const text = comment.value
+
+                        output.value.push({ text })
                     } else {
                         entity.text = entity.text ? entity.text + comment.value : comment.value
                     }
                 }
             }
         }
+
 
         if (token.type == "ExpressionStatement") {
             if (token.expression.type == "AssignmentExpression") {
@@ -92,6 +95,10 @@ export namespace Parser {
                     }
                 }
             }
+        } else if (token.type == "LabeledStatement") {
+            const entity: Entity = { code: code.slice(token.body.range![0], token.body.range![1]) }
+            output.value.push(entity)
+            parseComment(entity, token)
         } else {
             diagnostics.value.push(new Diagnostic(token.loc!.start.line, `Cannon parse entity ${token.type} `))
         }

@@ -1,7 +1,8 @@
-import { defineComponent, onMounted, ref, watch } from '@vue/composition-api';
-import { Diagnostic } from '../Diagnostic';
-import { MathJaxAbs } from '../MathJaxAbs';
-import { Parser } from '../Parser';
+import { defineComponent, onMounted, ref, watch } from '@vue/composition-api'
+import { Diagnostic } from '../Diagnostic'
+import { MathJaxAbs } from '../MathJaxAbs'
+import { Parser } from '../Parser'
+import "./diagrams.scss"
 
 export const Renderer = defineComponent({
     setup(props, ctx) {
@@ -52,13 +53,39 @@ export const Renderer = defineComponent({
 
                 const currOutput: HTMLElement[] = []
                 try {
-                    const compiled = new Function("write", source.join("\n"))
-                    compiled((text: string) => {
-                        currOutput.push(MathJaxAbs.renderAsciiMath(text
-                            .replace(/TO_DEG/g, "°")
-                            .replace(/arc(.{3})/g, "$1^-1")
-                        ))
-                    })
+                    const compiled = new Function("write", "tri90", source.join("\n"))
+                    compiled(
+                        (text: string) => {
+                            currOutput.push(MathJaxAbs.renderAsciiMath(text
+                                .replace(/TO_DEG/g, "°")
+                                .replace(/arc(.{3})/g, "$1^-1")
+                            ))
+                        },
+                        (input: Record<string, string>) => {
+                            const triangle = document.createElement("div")
+                            triangle.classList.add("tri90")
+
+                            for (const className of [
+                                "side-a",
+                                "side-b",
+                                "side-c",
+                                "dot",
+                                "arc",
+                            ]) {
+                                const element = document.createElement("div")
+                                element.classList.add(className)
+                                triangle.appendChild(element)
+                            }
+
+                            for (const [pos, text] of Object.entries(input)) {
+                                const element = MathJaxAbs.renderAsciiMath(text)
+                                element.classList.add(pos)
+                                triangle.appendChild(element)
+                            }
+
+                            currOutput.push(triangle)
+                        }
+                    )
                 } catch (err) {
                     Parser.diagnostics.value.push(new Diagnostic(-1, err.stack))
                     return
