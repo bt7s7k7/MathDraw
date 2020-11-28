@@ -12,7 +12,33 @@ export const Renderer = defineComponent({
             watch(() => Parser.output.value, (entities) => {
                 const source = [
                     "var root = m => n => Math.pow(n, 1 / m)",
-                    `var format = m => { let f = m.toFixed(4); while (f[f.length - 1] == "0" | f[f.length - 1] == ".") { f = f.slice(0, f.length - 2) }; return f; }`
+                    `var format = m => { let f = m.toFixed(4); if(f.includes(".0000")) return f.slice(0, f.length - 5); while (f[f.length - 1] == "0" | f[f.length - 1] == ".") { f = f.slice(0, f.length - 2) }; return f; }`,
+                    `var format_a = n => {
+                        const ret = []
+                        let deg = n / Math.PI * 180
+
+                        const [degF, degC] = format(deg).split(".")
+
+                        ret.push(degF + "°")
+                    
+                        if (degC) {
+                            let min = (deg - +degF) * 60
+                            let [minF, minC] = format(min).split(".")
+                            ret.push(minF + "\\"'\\"")
+                    
+                            if (minC) {
+                                let sec = (min - +minF) * 60
+                                let secF = format(sec).split(".")[0]
+                                ret.push(secF + "\\"''\\"")
+                            }
+                        }
+                    
+                        return ret.join(" ")
+                    }`,
+                    ...["sin", "cos", "tan"].map(v => `var ${v} = Math.${v}`),
+                    ...["sin", "cos", "tan"].map(v => `var arc${v} = Math.a${v}`),
+                    "var TO_DEG = Math.PI / 180",
+                    "var pi = Math.PI"
                 ]
 
                 for (const entity of entities) {
@@ -28,7 +54,10 @@ export const Renderer = defineComponent({
                 try {
                     const compiled = new Function("write", source.join("\n"))
                     compiled((text: string) => {
-                        currOutput.push(MathJaxAbs.renderAsciiMath(text))
+                        currOutput.push(MathJaxAbs.renderAsciiMath(text
+                            .replace(/TO_DEG/g, "°")
+                            .replace(/arc(.{3})/g, "$1^-1")
+                        ))
                     })
                 } catch (err) {
                     Parser.diagnostics.value.push(new Diagnostic(-1, err.stack))
@@ -48,7 +77,7 @@ export const Renderer = defineComponent({
         })
 
         return () => (
-            <div>
+            <div style={{ "contain": "strict", "overflow-y": "scroll", "flex-grow": "1" }}>
                 <div ref={outputElement} class={["p-1"]}></div>
                 <pre>{JSON.stringify(Parser.output.value, null, 2)}</pre>
             </div>
