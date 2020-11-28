@@ -78,7 +78,7 @@ export namespace Parser {
 
                 const comment = entity.text!.length > preText.length ? entity.text!.slice(preText.length) : ""
 
-                if (!entity.code) {
+                if (!entity.code && comment != "x") {
                     const isDegree = comment == "°"
                     entity.code = code.slice(token.range![0], token.range![1]) + "\n" + `write("${declaration.id.name!} = " + ${isDegree ? "format_a" : "format"}(${declaration.id.name!}) + ${isDegree ? `""` : JSON.stringify(comment)})`
                     if (comment) {
@@ -86,6 +86,10 @@ export namespace Parser {
                     }
                 } else {
                     entity.code = code.slice(token.range![0], token.range![1])
+
+                    if (comment == "x") {
+                        entity.text = entity.text!.slice(0, preText.length)
+                    }
                 }
             }
         } else {
