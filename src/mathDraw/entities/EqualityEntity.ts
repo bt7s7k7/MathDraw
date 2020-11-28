@@ -3,10 +3,12 @@ import { Entity } from './Entity'
 
 export namespace EqualityEntity {
 
-    export function parse(code: string, variable: string, expression: Expression): Entity {
+    export function parse(code: string, variable: string, rootExpression: Expression): Entity {
         const ret: string[] = [
             `${variable} =`
         ]
+
+        let retCode: string | undefined = undefined
 
         const parseExpression = (expression: Expression) => {
             if (expression.type == "BinaryExpression") {
@@ -29,16 +31,29 @@ export namespace EqualityEntity {
             } else if (expression.type == "Identifier") {
                 ret.push(expression.name)
             } else if (expression.type == "Literal") {
-                ret.push(expression.raw ?? JSON.stringify(expression.value))
+                const value = expression.raw ?? JSON.stringify(expression.value)
+                ret.push(value)
+                if (expression == rootExpression) retCode = value
+            } else if (expression.type == "CallExpression") {
+                if (expression.callee.type != "Super") parseExpression(expression.callee)
+                else ret.push(expression.callee.type)
+                ret.push("(")
+                for (const argument of expression.arguments) {
+                    if (argument.type != "SpreadElement") parseExpression(argument)
+                    else ret.push(argument.type)
+                }
+                ret.push(")")
+
             } else {
                 ret.push(JSON.stringify(expression.type))
             }
         }
 
-        parseExpression(expression)
+        parseExpression(rootExpression)
 
         return {
-            text: ret.join(" ")
+            text: ret.join(" "),
+            ...(retCode ? { code: retCode } : {})
         }
     }
 }

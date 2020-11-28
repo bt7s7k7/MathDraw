@@ -10,14 +10,17 @@ export const Renderer = defineComponent({
 
         onMounted(() => {
             watch(() => Parser.output.value, (entities) => {
-                const source = []
+                const source = [
+                    "var root = m => n => Math.pow(n, 1 / m)",
+                    `var format = m => { let f = m.toFixed(4); while (f[f.length - 1] == "0" | f[f.length - 1] == ".") { f = f.slice(0, f.length - 2) }; return f; }`
+                ]
 
                 for (const entity of entities) {
                     if ("text" in entity) {
                         source.push(`write(${JSON.stringify(entity.text)})`)
                     }
                     if ("code" in entity) {
-                        source.push(`code`)
+                        source.push(entity.code!)
                     }
                 }
 

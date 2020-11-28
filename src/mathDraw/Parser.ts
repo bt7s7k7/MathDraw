@@ -69,12 +69,25 @@ export namespace Parser {
 
                 output.value.push(entity)
 
+                const preText = entity.text!
+
                 parseComment(entity, declaration)
 
                 parseComment(entity, token)
+
+                const comment = entity.text!.length > preText.length ? entity.text!.slice(preText.length) : ""
+
+                if (!entity.code) {
+                    entity.code = code.value.slice(token.range![0], token.range![1]) + "\n" + `write("${declaration.id.name!} = " + format(${declaration.id.name!}) + ${JSON.stringify(comment)})`
+                    if (comment) {
+                        entity.text = entity.text!.slice(0, preText.length)
+                    }
+                } else {
+                    entity.code = code.value.slice(token.range![0], token.range![1])
+                }
             }
         } else {
-            diagnostics.value.push(new Diagnostic(token.loc!.start.line, `Cannon parse entity ${token.type}`))
+            diagnostics.value.push(new Diagnostic(token.loc!.start.line, `Cannon parse entity ${token.type} `))
         }
     }
 
