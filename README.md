@@ -1,4 +1,4 @@
-# Math Draw
+# Math Draw [![Deploy to Firebase Hosting on merge](https://github.com/bt7s7k7/MathDraw/workflows/Deploy%20to%20Firebase%20Hosting%20on%20merge/badge.svg)](https://math-draw.web.app/)
 Equation renderer and solver.
 
 ![image](https://user-images.githubusercontent.com/26630940/100522197-48782700-31a9-11eb-9688-38b8b66ed63f.png)
