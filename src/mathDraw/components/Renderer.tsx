@@ -61,6 +61,7 @@ export const Renderer = defineComponent({
                                 .replace(/TO_DEG/g, "°")
                                 .replace(/arc(.{3})/g, "$1^-1")
                                 .replace(/_ \(/g, "(")
+                                .replace(/_([^\s]+)/g, "_($1)")
                             ))
                         },
                         (input: Record<string, string>) => {
