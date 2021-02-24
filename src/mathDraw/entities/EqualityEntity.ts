@@ -44,7 +44,10 @@ export namespace EqualityEntity {
                     else ret.push(argument.type)
                 }
                 ret.push(")")
-
+            } else if (expression.type == "UnaryExpression") {
+                ret.push(expression.operator)
+                parseExpression(expression.argument)
+                if (expression.operator == "-" && expression == rootExpression && expression.argument.type == "Literal") retCode = (-(+(expression.argument.raw ?? "0"))).toString()
             } else {
                 ret.push(JSON.stringify(expression.type))
             }
