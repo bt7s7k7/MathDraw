@@ -16,7 +16,15 @@ export const Renderer = defineComponent({
             watch(() => Parser.output.value, (entities) => {
                 const source = [
                     "var root = m => n => Math.pow(n, 1 / m)",
-                    `var format = m => { let f = m.toFixed(4); if(f.includes(".0000")) return f.slice(0, f.length - 5); while (f[f.length - 1] == "0" || f[f.length - 1] == ".") { f = f.slice(0, f.length - 1) }; return f; }`,
+                    `var format = m => { 
+                        if (m instanceof Array) {
+                            return "[" + m.map(v=>format(v)).join(",") + "]"
+                        } 
+                        let f = m.toFixed(4);
+                        if(f.includes(".0000")) return f.slice(0, f.length - 5);
+                        while (f[f.length - 1] == "0" || f[f.length - 1] == ".") { f = f.slice(0, f.length - 1) };
+                        return f;
+                    }`,
                     `var format_a = n => {
                         const ret = []
                         let deg = n / Math.PI * 180
