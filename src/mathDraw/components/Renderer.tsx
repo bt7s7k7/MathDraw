@@ -4,12 +4,15 @@ import { MathJaxAbs } from '../MathJaxAbs'
 import { Parser } from '../Parser'
 import "./diagrams.scss"
 
+declare const MathJax: any
+
 export const Renderer = defineComponent({
     setup(props, ctx) {
 
         const outputElement = ref<HTMLElement>(null!)
 
         onMounted(() => {
+            document.body.appendChild(MathJax.chtmlStylesheet())
             watch(() => Parser.output.value, (entities) => {
                 const source = [
                     "var root = m => n => Math.pow(n, 1 / m)",
@@ -52,17 +55,24 @@ export const Renderer = defineComponent({
                     }
                 }
 
+                for (const child of [...outputElement.value.childNodes]) {
+                    child.remove()
+                }
+
                 const currOutput: HTMLElement[] = []
                 try {
                     const compiled = new Function("write", "tri90", source.join("\n"))
                     compiled(
                         (text: string) => {
-                            currOutput.push(MathJaxAbs.renderAsciiMath(text
+                            const mjx = MathJax.asciimath2chtml(text
                                 .replace(/TO_DEG/g, "°")
                                 .replace(/arc(.{3})/g, "$1^-1")
                                 .replace(/_ \(/g, "(")
                                 .replace(/_([^\s]+)/g, "_($1)")
-                            ))
+                            )
+                            const container = document.createElement("div")
+                            container.appendChild(mjx)
+                            currOutput.push(container)
                         },
                         (input: Record<string, string>) => {
                             const triangle = document.createElement("div")
@@ -94,13 +104,11 @@ export const Renderer = defineComponent({
                     return
                 }
 
-                for (const child of [...outputElement.value.childNodes]) {
-                    child.remove()
-                }
-
                 for (const element of currOutput) {
                     outputElement.value.appendChild(element)
                 }
+
+                MathJax.chtmlStylesheet()
             }, {
                 immediate: true
             })
